@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solax CAN Decoder</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.31/dist/uPlot.min.css">
+</head>
+<body>
+
+<header>
+  <h1>Solax CAN Bus Decoder / Encoder</h1>
+  <p>Solax V1 Hybrid / Fit / AC &middot; 500k baud &middot; Extended ID &middot; Little-endian</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="decoder">Decoder</button>
+  <button class="tab-btn"        data-tab="encoder">Encoder</button>
+</div>
+
+<!-- ── Decoder tab ──────────────────────────────────────── -->
+<div id="decoder" class="tab-panel active">
+  <div class="input-row">
+    <label class="file-btn">
+      Import file
+      <input type="file" id="fileInput" accept=".txt,.log">
+    </label>
+  </div>
+
+  <textarea id="logInput" spellcheck="false"
+    placeholder="Paste candump log or single frame, e.g.:
+(3162.556) TX1 1872 [8] B8 11 A8 0C F8 00 F8 00
+1872 B8 11 A8 0C F8 00 F8 00"></textarea>
+
+  <div class="controls">
+    <label>
+      <input type="checkbox" id="knownOnly" checked>
+      Show known frames only
+    </label>
+  </div>
+
+  <div id="skipWarn" class="warn" style="display:none">
+    <span id="skipMsg"></span>
+    <button id="skipDismiss" title="Dismiss">&#x2715;</button>
+  </div>
+
+  <div id="decoderOutput"></div>
+</div>
+
+<!-- ── Encoder tab ──────────────────────────────────────── -->
+<div id="encoder" class="tab-panel">
+  <div class="encoder-top">
+    <label for="frameSelect">Frame:</label>
+    <select id="frameSelect"></select>
+  </div>
+
+  <div id="encoderForm" class="encoder-form"></div>
+
+  <div id="encoderOutput" class="output-block" style="display:none">
+    <div class="output-label">Candump</div>
+    <div class="output-value" id="outCandump"></div>
+    <div class="output-label">Raw hex</div>
+    <div class="output-value" id="outRawHex"></div>
+    <div class="copy-row">
+      <button id="copyBtn">Copy raw hex</button>
+      <span id="copiedMsg" style="display:none">Copied!</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/uplot@1.6.31/dist/uPlot.iife.min.js"></script>
+<script src="protocol.js"></script>
+<script src="decoder.js"></script>
+<script src="encoder.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
