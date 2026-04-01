@@ -98,21 +98,30 @@ function makeSection(idHex, title, count) {
   return { section: section, body: body };
 }
 
+function isElectrical(unit) {
+  return ['V', 'mV', 'A', 'W', 'Wh', 'kWh', '%'].indexOf(unit) !== -1;
+}
+
 function renderTimeSeries(container, fieldName, unit, timestamps, values) {
   var wrap = document.createElement('div');
   wrap.className = 'plot-wrap';
+
+  var titleEl = document.createElement('div');
+  titleEl.className = 'plot-title';
+  titleEl.textContent = fieldName + (unit ? ' (' + unit + ')' : '');
+  wrap.appendChild(titleEl);
+
   container.appendChild(wrap);
 
-  var label = fieldName + (unit ? ' (' + unit + ')' : '');
   var w = Math.max(wrap.offsetWidth || 0, 300);
 
   var opts = {
     width:  w,
-    height: 160,
+    height: 150,
     scales: { x: { time: false } },
     series: [
       {},
-      { label: label, stroke: '#00cc66', width: 2, fill: 'rgba(0,204,102,0.08)' },
+      { label: fieldName, stroke: '#00cc66', width: 2, fill: 'rgba(0,204,102,0.08)' },
     ],
     axes: [
       { stroke: '#666', ticks: { stroke: '#555' }, grid: { stroke: '#2a2a2a' }, label: 's' },
@@ -173,17 +182,47 @@ function renderDecoder() {
     } else if (group.length === 1) {
       s.body.appendChild(renderTable(first));
     } else {
-      // Multiple occurrences → uPlot per field
+      // Multiple occurrences: electrical fields → uPlot, non-electrical → table (latest value)
       var timestamps = decoded.map(function(d) { return d.timestamp; });
-      var grid = document.createElement('div');
-      grid.className = 'plot-grid';
-      s.body.appendChild(grid);
-
       var fieldDefs = FRAMES[id].fields;
+      var electricalFields = [];
+      var tableFields = [];
       fieldDefs.forEach(function(fieldDef, fi) {
-        var values = decoded.map(function(d) { return d.fields[fi].value; });
-        renderTimeSeries(grid, fieldDef.name, fieldDef.unit, timestamps, values);
+        if (isElectrical(fieldDef.unit)) {
+          electricalFields.push({ def: fieldDef, fi: fi });
+        } else {
+          tableFields.push({ def: fieldDef, fi: fi });
+        }
       });
+
+      if (electricalFields.length > 0) {
+        var grid = document.createElement('div');
+        grid.className = 'plot-grid';
+        s.body.appendChild(grid);
+        electricalFields.forEach(function(item) {
+          var values = decoded.map(function(d) { return d.fields[item.fi].value; });
+          renderTimeSeries(grid, item.def.name, item.def.unit, timestamps, values);
+        });
+      }
+
+      if (tableFields.length > 0) {
+        var tbl = document.createElement('table');
+        var hdr = document.createElement('tr');
+        hdr.innerHTML = '<th>Field</th><th>Raw</th><th>Latest</th>';
+        tbl.appendChild(hdr);
+        var last = decoded[decoded.length - 1];
+        tableFields.forEach(function(item) {
+          var f = last.fields[item.fi];
+          var tr = document.createElement('tr');
+          var valueStr = f.value + (f.unit ? '\u00a0' + f.unit : '');
+          tr.innerHTML =
+            '<td>' + f.name + '</td>' +
+            '<td>' + f.rawHex + '</td>' +
+            '<td class="' + (f.inRange ? '' : 'out-of-range') + '">' + valueStr + '</td>';
+          tbl.appendChild(tr);
+        });
+        s.body.appendChild(tbl);
+      }
     }
 
     output.appendChild(s.section);

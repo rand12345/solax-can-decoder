@@ -141,6 +141,7 @@ td                 { padding: 4px 8px; border-bottom: 1px solid var(--border); }
 /* Override uPlot defaults for dark theme */
 .plot-wrap .u-wrap   { background: transparent; }
 .plot-wrap .u-legend { display: none; }
+.plot-title { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 
 /* ── Encoder ─────────────────────────────────────── */
 .encoder-top        { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 12px; }
