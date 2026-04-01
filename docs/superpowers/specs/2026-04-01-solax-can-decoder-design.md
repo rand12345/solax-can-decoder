@@ -67,7 +67,7 @@ All multi-byte fields are little-endian. Signed fields use two's complement.
 | 0x1876 | BMS_PackTemps | DBC + Battery-Emulator |
 | 0x1877 | BMS_Identity  | Battery-Emulator (battery type, firmware version) |
 | 0x1878 | BMS_PackStats | DBC + Battery-Emulator |
-| 0x187A | BMS_Announce  | Battery-Emulator (static startup frame: `01 50 ...`) |
+| 0x187A | BMS_Announce  | Battery-Emulator (startup frame; b0=0x01, b1=battery_type e.g. 0x50, b2–b7=0x00) |
 | 0x187E | BMS_Ultra     | Battery-Emulator (total capacity Wh, SOH%, SOC%) |
 
 ---
@@ -121,7 +121,6 @@ Two entry methods, both feeding the same parser:
 
 **Controls:**
 - `Show known frames only` toggle (default: ON)
-- `Show all occurrences` toggle — when OFF (default), time series shows all data points; this toggle has no effect on single-occurrence frames
 - Skipped line count: `"N lines skipped — unrecognised format"` (dismissible, shown only when N > 0)
 
 ### Behaviour
