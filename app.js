@@ -221,11 +221,13 @@ function renderDecoder() {
 
 var frameSelect = document.getElementById('frameSelect');
 Object.keys(FRAMES).forEach(function(id) {
+  var def = FRAMES[parseInt(id)];
+  if (!def.fields) return;  // skip variant-only frames (receive-only, not encodable)
   var idInt  = parseInt(id);
   var idHex  = '0x' + idInt.toString(16).toUpperCase().padStart(4, '0');
   var option = document.createElement('option');
   option.value       = id;
-  option.textContent = idHex + ' — ' + FRAMES[id].name;
+  option.textContent = idHex + ' — ' + def.name;
   frameSelect.appendChild(option);
 });
 
@@ -237,7 +239,7 @@ function buildEncoderForm() {
   var form = document.getElementById('encoderForm');
   form.innerHTML = '';
 
-  if (!def) return;
+  if (!def || !def.fields) return;
 
   def.fields.forEach(function(f) {
     var row   = document.createElement('div');
