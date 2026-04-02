@@ -47,6 +47,7 @@ function idToHex(id) {
 
 function renderTable(decoded) {
   var table = document.createElement('table');
+  table.className = 'field-table';
   var header = document.createElement('tr');
   header.innerHTML = '<th>Field</th><th>Raw</th><th>Decoded</th>';
   table.appendChild(header);
@@ -181,6 +182,8 @@ function renderDecoder() {
       s.body.appendChild(renderUnknownTable(first.rawBytes));
     } else if (group.length === 1) {
       s.body.appendChild(renderTable(first));
+    } else if (FRAMES[id].noGraph) {
+      s.body.appendChild(renderTable(decoded[decoded.length - 1]));
     } else {
       // Multiple occurrences: electrical fields → uPlot, non-electrical → table (latest value)
       var timestamps = decoded.map(function(d) { return d.timestamp; });
@@ -207,6 +210,7 @@ function renderDecoder() {
 
       if (tableFields.length > 0) {
         var tbl = document.createElement('table');
+        tbl.className = 'field-table';
         var hdr = document.createElement('tr');
         hdr.innerHTML = '<th>Field</th><th>Raw</th><th>Latest</th>';
         tbl.appendChild(hdr);

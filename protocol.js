@@ -6,11 +6,17 @@
 
 const FRAMES = {
   0x1871: {
-    name: "BMS_Poll",
+    name: "BMS_DateTime",
+    noGraph: true,
     fields: [
-      { name: "cmd",   startByte: 0, length: 1, signed: false, factor: 1, offset: 0, unit: "", min: 0, max: 255 },
-      { name: "byte2", startByte: 2, length: 1, signed: false, factor: 1, offset: 0, unit: "", min: 0, max: 255 },
-      { name: "byte4", startByte: 4, length: 1, signed: false, factor: 1, offset: 0, unit: "", min: 0, max: 255 },
+      { name: "cmd",    startByte: 0, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:   255 },
+      { name: "func",   startByte: 1, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:   255 },
+      { name: "year",   startByte: 2, length: 1, signed: false, factor: 1, offset: 2000, unit: "", min: 2020, max:  2099 },
+      { name: "month",  startByte: 3, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    1, max:    12 },
+      { name: "day",    startByte: 4, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    1, max:    31 },
+      { name: "hour",   startByte: 5, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    23 },
+      { name: "minute", startByte: 6, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    59 },
+      { name: "second", startByte: 7, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    59 },
     ]
   },
 

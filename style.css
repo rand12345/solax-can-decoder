@@ -83,7 +83,19 @@ button {
 }
 button:hover { border-color: var(--accent); color: var(--accent); }
 
-.file-btn { position: relative; overflow: hidden; }
+.file-btn {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 5px 12px;
+  cursor: pointer;
+  display: inline-block;
+}
+.file-btn:hover { border-color: var(--accent); color: var(--accent); }
 .file-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
 /* ── Warnings ────────────────────────────────────── */
@@ -125,6 +137,13 @@ table              { width: 100%; border-collapse: collapse; font-size: 12px; }
 th                 { text-align: left; color: var(--muted); padding: 3px 8px; border-bottom: 1px solid var(--border); }
 td                 { padding: 4px 8px; border-bottom: 1px solid var(--border); }
 .out-of-range      { color: var(--warn); }
+
+/* Fixed column widths so all field tables align consistently */
+table.field-table                    { table-layout: fixed; }
+table.field-table th:nth-child(2),
+table.field-table td:nth-child(2)    { width: 130px; }
+table.field-table th:nth-child(3),
+table.field-table td:nth-child(3)    { width: 150px; }
 
 /* ── uPlot charts ────────────────────────────────── */
 .plot-grid {
