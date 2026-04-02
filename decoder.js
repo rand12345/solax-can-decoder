@@ -46,6 +46,31 @@ function decodeFrame(id, bytes) {
   if (!def) {
     return { id: id, name: 'Unknown', known: false, rawBytes: bytes.slice() };
   }
+
+  // Check variants first — use the first matching variant's name and fields
+  if (def.variants) {
+    for (var vi = 0; vi < def.variants.length; vi++) {
+      var v = def.variants[vi];
+      if (v.match(bytes)) {
+        var vfields = v.fields.map(function(f) {
+          var raw = readRaw(bytes, f.startByte, f.length, f.signed);
+          var value = Math.round((raw * f.factor + f.offset) * 10000) / 10000;
+          return {
+            name: f.name,
+            raw: raw,
+            rawHex: toHex(raw, f.length),
+            value: value,
+            unit: f.unit,
+            inRange: value >= f.min && value <= f.max,
+          };
+        });
+        return { id: id, name: v.name, known: true, fields: vfields };
+      }
+    }
+    // No variant matched — show as named unknown (e.g. BMS_Poll)
+    return { id: id, name: def.name, known: false, rawBytes: bytes.slice() };
+  }
+
   var fields = def.fields.map(function(f) {
     var raw = readRaw(bytes, f.startByte, f.length, f.signed);
     var value = Math.round((raw * f.factor + f.offset) * 10000) / 10000;

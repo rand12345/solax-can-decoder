@@ -145,22 +145,24 @@ table.field-table td:nth-child(2)    { width: 130px; }
 table.field-table th:nth-child(3),
 table.field-table td:nth-child(3)    { width: 150px; }
 
-/* ── uPlot charts ────────────────────────────────── */
-.plot-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
+/* ── Step viewer ─────────────────────────────────── */
+.step-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
-.plot-wrap {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 8px;
-  overflow: hidden;
+.step-controls input[type=range] {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
-/* Override uPlot defaults for dark theme */
-.plot-wrap .u-wrap   { background: transparent; }
-.plot-wrap .u-legend { display: none; }
-.plot-title { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.step-info {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  min-width: 160px;
+}
 
 /* ── Encoder ─────────────────────────────────────── */
 .encoder-top        { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 12px; }

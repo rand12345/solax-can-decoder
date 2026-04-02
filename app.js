@@ -99,40 +99,58 @@ function makeSection(idHex, title, count) {
   return { section: section, body: body };
 }
 
-function isElectrical(unit) {
-  return ['V', 'mV', 'A', 'W', 'Wh', 'kWh', '%'].indexOf(unit) !== -1;
-}
+function renderStepViewer(container, decoded) {
+  var idx = decoded.length - 1;
 
-function renderTimeSeries(container, fieldName, unit, timestamps, values) {
-  var wrap = document.createElement('div');
-  wrap.className = 'plot-wrap';
+  var controls = document.createElement('div');
+  controls.className = 'step-controls';
 
-  var titleEl = document.createElement('div');
-  titleEl.className = 'plot-title';
-  titleEl.textContent = fieldName + (unit ? ' (' + unit + ')' : '');
-  wrap.appendChild(titleEl);
+  var prevBtn = document.createElement('button');
+  prevBtn.textContent = '\u25c4';
+  prevBtn.title = 'Previous frame';
 
-  container.appendChild(wrap);
+  var slider = document.createElement('input');
+  slider.type = 'range';
+  slider.min = 0;
+  slider.max = decoded.length - 1;
+  slider.value = idx;
 
-  var w = Math.max(wrap.offsetWidth || 0, 300);
+  var nextBtn = document.createElement('button');
+  nextBtn.textContent = '\u25ba';
+  nextBtn.title = 'Next frame';
 
-  var opts = {
-    width:  w,
-    height: 150,
-    scales: { x: { time: false } },
-    series: [
-      {},
-      { label: fieldName, stroke: '#00cc66', width: 2, fill: 'rgba(0,204,102,0.08)' },
-    ],
-    axes: [
-      { stroke: '#666', ticks: { stroke: '#555' }, grid: { stroke: '#2a2a2a' }, label: 's' },
-      { stroke: '#666', ticks: { stroke: '#555' }, grid: { stroke: '#2a2a2a' }, label: unit || '' },
-    ],
-    cursor: { drag: { setScale: false } },
-    legend: { show: false },
-  };
+  var info = document.createElement('span');
+  info.className = 'step-info';
 
-  new uPlot(opts, [timestamps, values], wrap);
+  controls.appendChild(prevBtn);
+  controls.appendChild(slider);
+  controls.appendChild(nextBtn);
+  controls.appendChild(info);
+  container.appendChild(controls);
+
+  var tableWrap = document.createElement('div');
+  container.appendChild(tableWrap);
+
+  function update() {
+    slider.value = idx;
+    var d = decoded[idx];
+    var ts = d.timestamp ? '\u00a0\u2014\u00a0t\u00a0=\u00a0' + d.timestamp.toFixed(3) + '\u00a0s' : '';
+    info.textContent = (idx + 1) + '\u00a0/\u00a0' + decoded.length + ts;
+    prevBtn.disabled = (idx === 0);
+    nextBtn.disabled = (idx === decoded.length - 1);
+    tableWrap.innerHTML = '';
+    if (d.known) {
+      tableWrap.appendChild(renderTable(d));
+    } else {
+      tableWrap.appendChild(renderUnknownTable(d.rawBytes));
+    }
+  }
+
+  prevBtn.addEventListener('click', function() { if (idx > 0) { idx--; update(); } });
+  nextBtn.addEventListener('click', function() { if (idx < decoded.length - 1) { idx++; update(); } });
+  slider.addEventListener('input', function() { idx = parseInt(slider.value); update(); });
+
+  update();
 }
 
 function renderDecoder() {
@@ -172,61 +190,27 @@ function renderDecoder() {
       d.timestamp = f.timestamp;
       return d;
     });
-    var first = decoded[0];
 
-    if (!first.known && knownOnly) return;
+    // If knownOnly, skip groups where no frame decoded successfully
+    var anyKnown = decoded.some(function(d) { return d.known; });
+    if (!anyKnown && knownOnly) return;
 
-    var s = makeSection(idToHex(id), first.name, group.length);
+    // Section title from first known frame (or first frame for all-unknown groups)
+    var nameFrame = decoded[0];
+    for (var ni = 0; ni < decoded.length; ni++) {
+      if (decoded[ni].known) { nameFrame = decoded[ni]; break; }
+    }
 
-    if (!first.known) {
-      s.body.appendChild(renderUnknownTable(first.rawBytes));
-    } else if (group.length === 1) {
-      s.body.appendChild(renderTable(first));
-    } else if (FRAMES[id].noGraph) {
-      s.body.appendChild(renderTable(decoded[decoded.length - 1]));
+    var s = makeSection(idToHex(id), nameFrame.name, group.length);
+
+    if (group.length === 1) {
+      if (decoded[0].known) {
+        s.body.appendChild(renderTable(decoded[0]));
+      } else {
+        s.body.appendChild(renderUnknownTable(decoded[0].rawBytes));
+      }
     } else {
-      // Multiple occurrences: electrical fields → uPlot, non-electrical → table (latest value)
-      var timestamps = decoded.map(function(d) { return d.timestamp; });
-      var fieldDefs = FRAMES[id].fields;
-      var electricalFields = [];
-      var tableFields = [];
-      fieldDefs.forEach(function(fieldDef, fi) {
-        if (isElectrical(fieldDef.unit)) {
-          electricalFields.push({ def: fieldDef, fi: fi });
-        } else {
-          tableFields.push({ def: fieldDef, fi: fi });
-        }
-      });
-
-      if (electricalFields.length > 0) {
-        var grid = document.createElement('div');
-        grid.className = 'plot-grid';
-        s.body.appendChild(grid);
-        electricalFields.forEach(function(item) {
-          var values = decoded.map(function(d) { return d.fields[item.fi].value; });
-          renderTimeSeries(grid, item.def.name, item.def.unit, timestamps, values);
-        });
-      }
-
-      if (tableFields.length > 0) {
-        var tbl = document.createElement('table');
-        tbl.className = 'field-table';
-        var hdr = document.createElement('tr');
-        hdr.innerHTML = '<th>Field</th><th>Raw</th><th>Latest</th>';
-        tbl.appendChild(hdr);
-        var last = decoded[decoded.length - 1];
-        tableFields.forEach(function(item) {
-          var f = last.fields[item.fi];
-          var tr = document.createElement('tr');
-          var valueStr = f.value + (f.unit ? '\u00a0' + f.unit : '');
-          tr.innerHTML =
-            '<td>' + f.name + '</td>' +
-            '<td>' + f.rawHex + '</td>' +
-            '<td class="' + (f.inRange ? '' : 'out-of-range') + '">' + valueStr + '</td>';
-          tbl.appendChild(tr);
-        });
-        s.body.appendChild(tbl);
-      }
+      renderStepViewer(s.body, decoded);
     }
 
     output.appendChild(s.section);

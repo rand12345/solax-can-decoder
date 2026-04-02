@@ -6,17 +6,24 @@
 
 const FRAMES = {
   0x1871: {
-    name: "BMS_DateTime",
+    name: "BMS_Poll",
     noGraph: true,
-    fields: [
-      { name: "cmd",    startByte: 0, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:   255 },
-      { name: "func",   startByte: 1, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:   255 },
-      { name: "year",   startByte: 2, length: 1, signed: false, factor: 1, offset: 2000, unit: "", min: 2020, max:  2099 },
-      { name: "month",  startByte: 3, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    1, max:    12 },
-      { name: "day",    startByte: 4, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    1, max:    31 },
-      { name: "hour",   startByte: 5, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    23 },
-      { name: "minute", startByte: 6, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    59 },
-      { name: "second", startByte: 7, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    59 },
+    variants: [
+      {
+        // cmd=0x03, func=0x06 → time/date broadcast from inverter
+        match: function(bytes) { return bytes[0] === 0x03 && bytes[1] === 0x06; },
+        name: "BMS_DateTime",
+        fields: [
+          { name: "cmd",    startByte: 0, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:   255 },
+          { name: "func",   startByte: 1, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:   255 },
+          { name: "year",   startByte: 2, length: 1, signed: false, factor: 1, offset: 2000, unit: "", min: 2020, max:  2099 },
+          { name: "month",  startByte: 3, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    1, max:    12 },
+          { name: "day",    startByte: 4, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    1, max:    31 },
+          { name: "hour",   startByte: 5, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    23 },
+          { name: "minute", startByte: 6, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    59 },
+          { name: "second", startByte: 7, length: 1, signed: false, factor: 1, offset:    0, unit: "", min:    0, max:    59 },
+        ]
+      }
     ]
   },
 
